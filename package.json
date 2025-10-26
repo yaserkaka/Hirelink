@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start:dev": "node --watch .",
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+    "prisma": "npx prisma"
   },
   "repository": {
     "type": "git",
