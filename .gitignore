@@ -38,3 +38,5 @@ tmp/
 # Cache
 .cache/
 coverage/
+
+/src/generated/prisma
