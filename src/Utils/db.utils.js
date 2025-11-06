@@ -1,4 +1,3 @@
-
 import { prisma } from "../../prisma/client.js"
 import { COMMON_MESSAGES } from "./Constants/messages.js";
 import STATUS_CODES from "./Constants/statuscode.js";
@@ -55,7 +54,12 @@ export const getById = async ({ model, id, include = {}, resourceName = "Resourc
 
 export const checkOwnership = (record, userIdField, userId) => {
 
-    if (!record) throw new Error(COMMON_MESSAGES.UNAUTHORIZED , STATUS_CODES.FORBIDDEN);
+    //if (!record) throw new Error(COMMON_MESSAGES.UNAUTHORIZED , STATUS_CODES.FORBIDDEN);
+    if (!record) {
+        const error = new Error(COMMON_MESSAGES.UNAUTHORIZED);
+        error.status = STATUS_CODES.FORBIDDEN;
+        throw error;
+    }
     console.log(record[userIdField], "*" , userId );
     
     if (Number(record[userIdField]) !== Number(userId)) throw new Error(COMMON_MESSAGES.UNAUTHORIZED , STATUS_CODES.FORBIDDEN);

@@ -16,7 +16,7 @@ export const createJobService = async (userId , jobData) => {
     const company = await prisma.user.findFirst({ where: { id: userId , role: "COMPANY"} });
 
     if (!company) throw new ServiceError( JOBS_MESSAGES.ONLY_COMPANY_CAN_CREATE_JOB, STATUS_CODES.FORBIDDEN);
-
+    
     return createRecord("job", { ...jobData, companyId: company.id });
 
 };
@@ -68,7 +68,7 @@ export const deleteJobService = async (id, userId) => {
 export const getJobByIdService = async (id) => {
     const jobId = Number(id);
 
-    if (isNaN(jobId)) return Null;
+    if (isNaN(jobId)) return null;
 
     const job = await prisma.job.findUnique({ where: { id: Number(id) } });
 

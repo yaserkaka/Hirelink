@@ -29,6 +29,7 @@ export const updateJobById = async (req, res, next) => {
   
     if (!job) throw new Error(JOBS_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
   
+    
     successResponse({ res, statusCode: STATUS_CODES.OK, message:JOBS_MESSAGES.UPDATE_SUCCESS , data: job });
 
 };
