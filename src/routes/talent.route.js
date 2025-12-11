@@ -6,6 +6,7 @@ import validate from "../middleware/validate.js";
 import { talentProfileSchema } from "../validators/talent.validator.js";
 
 const router = Router();
+
 router.get("/profile", requireAuth, authController.getCurrent);
 router.put(
 	"/profile",
@@ -20,6 +21,9 @@ router.put(
 	uploadAvatar.single("avatar"),
 	talentController.updateFile,
 );
+router.get("/avatar", requireAuth, talentController.getFile);
+router.delete("/avatar", requireAuth, talentController.deleteFile);
+router.get("/resume", requireAuth, talentController.getFile);
 router.put(
 	"/resume",
 	requireAuth,

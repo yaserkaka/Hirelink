@@ -8,10 +8,10 @@ import * as verificationService from "./verification.service.js";
 
 export {
 	authService,
-	tokenService,
 	emailService,
 	employerService,
 	talentService,
+	tokenService,
 	userService,
 	verificationService,
 };

@@ -141,3 +141,68 @@ export async function updateFile(type, id, file) {
 	}
 }
 
+
+export async function getFile(type, id, { width = 200, height = 200 }) {
+	try {
+		const user = await prisma.user.findUnique({
+			where: { id },
+			include: { talentProfile: true },
+		});
+
+		if (!user) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "talent not found",
+			});
+		}
+
+		const fileId = user.talentProfile[`${type}PublicId`];
+
+		if (!fileId) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: `talent ${type} not found`,
+			});
+		}
+
+		const [error, _] = await errorUtils(
+			cloudinary.api.resource(fileId, {
+				resource_type: type === "avatar" ? "image" : "raw",
+			}),
+		);
+
+		if (error) {
+			logger.error(error);
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: `talent ${type} not found`,
+			});
+		}
+
+		const fileUrl = cloudinary.url(fileId, {
+			folder: `${type}s`,
+			resource_type: type === "avatar" ? "image" : "raw",
+			...(type === "avatar" ? { width, height, crop: "fill" } : {}),
+		});
+
+		return result({
+			ok: true,
+			statusCode: statusCodes.OK,
+			message: `talent ${type} fetched`,
+			payload: {
+				[type]: fileUrl,
+			},
+		});
+	} catch (err) {
+		logger.error(err);
+
+		return result({
+			ok: false,
+			statusCode: statusCodes.INTERNAL_SERVER_ERROR,
+			message: `error fetching ${type}`,
+		});
+	}
+}
