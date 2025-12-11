@@ -96,13 +96,13 @@ model Talent {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  firstName String?
-  lastName  String?
-  headline  String?
-  bio       String? @db.VarChar(1000)
-  location  String?
-  avatarUrl String?
-  resumeUrl String?
+  firstName      String?
+  lastName       String?
+  headline       String?
+  bio            String? @db.VarChar(1000)
+  location       String?
+  avatarPublicId String?
+  resumePublicId String?
 
   // Relations
   skills       TalentSkill[]       @relation("TalentSkills")
@@ -121,11 +121,11 @@ model Employer {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  companyName String
-  website     String?
-  description String? @db.VarChar(1000)
-  location    String?
-  logoUrl     String?
+  companyName    String
+  website        String?
+  description    String? @db.VarChar(1000)
+  location       String?
+  avatarPublicId String?
 
   // Relations
   jobs Job[] @relation("EmployerJobs")
