@@ -68,7 +68,7 @@ export default function applyGlobalMiddleware(app) {
 	// It limits the allowed requests to 100 per 15 minutes
 	app.use(
 		rateLimit({
-			windowMs: 15 * 60 * 1000,
+			windowMs: 15 * 60_000,
 			max: 100,
 			standardHeaders: true,
 			legacyHeaders: false,
