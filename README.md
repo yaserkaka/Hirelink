@@ -29,12 +29,11 @@
 
 * [x] GET `/talent/profile`
 * [x] PUT `/talent/profile`
-* [x] POST `/talent/profile/avatar`
-* [x] GET `/talent/profile/avatar`
-* [x] DELETE `/talent/profile/avatar`
+* [x] POST `/talent/avatar`
+* [x] GET `/talent/avatar`
+* [x] DELETE `/talent/avatar`
 * [x] GET `/talent/resume`
 * [x] PUT `/talent/resume`
-* [x] POST `/talent/resume`
 * [x] DELETE `/talent/resume`
 * [ ] GET `/talent/recommendations/jobs?limit=10`
 
