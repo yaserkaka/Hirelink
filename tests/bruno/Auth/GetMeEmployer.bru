@@ -1,17 +1,17 @@
 meta {
-  name: GetProfile
+  name: GetMeEmployer
   type: http
-  seq: 4
+  seq: 7
 }
 
 get {
-  url: {{base_url}}/talent/profile
+  url: {{base_url}}/auth/me
   body: none
   auth: inherit
 }
 
 headers {
-  Authorization: Bearer {{talent_access_token}}
+  Authorization: Bearer {{employer_access_token}}
 }
 
 settings {

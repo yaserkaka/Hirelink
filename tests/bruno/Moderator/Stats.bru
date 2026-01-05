@@ -1,17 +1,17 @@
 meta {
-  name: GetProfile
+  name: Stats
   type: http
-  seq: 4
+  seq: 1
 }
 
 get {
-  url: {{base_url}}/talent/profile
+  url: {{base_url}}/moderation/stats
   body: none
   auth: inherit
 }
 
 headers {
-  Authorization: Bearer {{talent_access_token}}
+  Authorization: Bearer {{moderator_access_token}}
 }
 
 settings {

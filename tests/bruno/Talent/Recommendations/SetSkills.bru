@@ -1,0 +1,38 @@
+meta {
+  name: SetSkills
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{base_url}}/talent/skills
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{talent_access_token}}
+}
+
+body:json {
+  {
+    "skills": [
+      {
+        "name": "Node.js",
+        "level": "INTERMEDIATE"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  const skillId = res.body?.data?.skills?.[0]?.skillId;
+  if (skillId) {
+    bru.setEnvVar("skill_id", JSON.stringify(skillId));
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

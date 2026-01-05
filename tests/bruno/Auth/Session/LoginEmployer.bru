@@ -1,0 +1,30 @@
+meta {
+  name: LoginEmployer
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": {{employer_email}},
+    "password": {{password}}
+  }
+}
+
+script:post-response {
+  const token = res.body.data.token;
+
+  bru.setEnvVar("employer_access_token", token);
+  bru.setEnvVar("access_token", token);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

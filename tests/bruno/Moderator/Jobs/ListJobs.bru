@@ -1,0 +1,32 @@
+meta {
+  name: ListJobs
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/moderation/jobs?limit=20&skip=0
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{moderator_access_token}}
+}
+
+params:query {
+  limit: 20
+  skip: 0
+}
+
+script:post-response {
+  const firstId = res.body?.data?.[0]?.id;
+  if (firstId) {
+    bru.setEnvVar("job_id", firstId);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

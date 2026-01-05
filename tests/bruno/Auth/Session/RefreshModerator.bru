@@ -1,0 +1,23 @@
+meta {
+  name: RefreshModerator
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/auth/refresh
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const token = res.body.data.token;
+
+  bru.setEnvVar("moderator_access_token", token);
+  bru.setEnvVar("access_token", token);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

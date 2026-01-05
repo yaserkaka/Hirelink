@@ -1,0 +1,33 @@
+meta {
+  name: ApplyToJob
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/jobs/{{job_id}}/apply
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{talent_access_token}}
+}
+
+body:json {
+  {
+    "coverLetter": "Hi! I'd like to apply."
+  }
+}
+
+script:post-response {
+  const applicationId = res.body?.data?.id;
+  if (applicationId) {
+    bru.setEnvVar("application_id", applicationId);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

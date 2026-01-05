@@ -1,5 +1,5 @@
 meta {
-  name: Register
+  name: RegisterTalent
   type: http
   seq: 1
 }
@@ -12,13 +12,20 @@ post {
 
 body:json {
   {
-    "email": "guru-sleeve-dipper@duck.com",
-    "password": "a@A345dsa",
+    "email": {{talent_email}},
+    "password": {{password}},
     "role": "TALENT",
     "profileData": {
       "firstName": "sleeve",
       "lastName": "dipper"
     }
+  }
+}
+
+script:post-response {
+  const token = res.body?.data?.verificationToken;
+  if (token) {
+    bru.setEnvVar("verification_token", JSON.stringify(token));
   }
 }
 

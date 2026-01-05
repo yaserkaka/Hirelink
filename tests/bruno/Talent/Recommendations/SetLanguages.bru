@@ -1,0 +1,38 @@
+meta {
+  name: SetLanguages
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{base_url}}/talent/languages
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{talent_access_token}}
+}
+
+body:json {
+  {
+    "languages": [
+      {
+        "name": "English",
+        "proficiency": "NATIVE"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  const languageId = res.body?.data?.languages?.[0]?.languageId;
+  if (languageId) {
+    bru.setEnvVar("language_id", JSON.stringify(languageId));
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

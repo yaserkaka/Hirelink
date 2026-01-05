@@ -1,0 +1,44 @@
+meta {
+  name: CreateLowMatchJob
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/employer/jobs
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{employer_access_token}}
+}
+
+body:json {
+  {
+    "title": "Backend Engineer (Low Match)",
+    "description": "Nice-to-have Node.js only",
+    "location": "Remote",
+    "jobType": "FULL_TIME",
+    "experienceLevel": "JUNIOR",
+    "salary": 2400,
+    "requiredSkills": [
+      {
+        "skillId": {{skill_id}},
+        "required": false
+      }
+    ]
+  }
+}
+
+script:post-response {
+  const jobId = res.body?.data?.id;
+  if (jobId) {
+    bru.setEnvVar("job_id_low", JSON.stringify(jobId));
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

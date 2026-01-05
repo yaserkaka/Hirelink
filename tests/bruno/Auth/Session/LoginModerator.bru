@@ -1,0 +1,35 @@
+meta {
+  name: LoginModerator
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": {{moderator_email}},
+    "password": {{moderator_password}}
+  }
+}
+
+script:post-response {
+  const token = res.body?.data?.token;
+  if (!token) {
+    const msg = res.body?.message || "login failed";
+    bru.setEnvVar("last_error", msg);
+    return;
+  }
+
+  bru.setEnvVar("moderator_access_token", token);
+  bru.setEnvVar("access_token", token);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,18 +1,13 @@
 meta {
-  name: GetAvatar
+  name: GetJob
   type: http
-  seq: 3
+  seq: 2
 }
 
 get {
-  url: {{base_url}}/talent/avatar
+  url: {{base_url}}/jobs/{{job_id}}
   body: none
   auth: inherit
-}
-
-params:query {
-  width: 200
-  height: 200
 }
 
 headers {

@@ -1,0 +1,27 @@
+meta {
+  name: ListApplications
+  type: http
+  seq: 99
+}
+
+get {
+  url: {{base_url}}/talent/applications
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{talent_access_token}}
+}
+
+script:post-response {
+  const firstId = res.body?.data?.[0]?.id;
+  if (firstId) {
+    bru.setEnvVar("application_id", firstId);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

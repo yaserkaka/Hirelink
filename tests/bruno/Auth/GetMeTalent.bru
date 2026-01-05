@@ -1,18 +1,13 @@
 meta {
-  name: GetAvatar
+  name: GetMeTalent
   type: http
-  seq: 3
+  seq: 6
 }
 
 get {
-  url: {{base_url}}/talent/avatar
+  url: {{base_url}}/auth/me
   body: none
   auth: inherit
-}
-
-params:query {
-  width: 200
-  height: 200
 }
 
 headers {

@@ -1,0 +1,28 @@
+meta {
+  name: ListRecommendedJobs
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/jobs?mode=recommended
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{talent_access_token}}
+}
+
+script:post-response {
+  const firstId = res.body?.data?.[0]?.id;
+  if (firstId) {
+    bru.setEnvVar("job_id", firstId);
+    bru.setEnvVar("recommended_job_id", JSON.stringify(firstId));
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,5 +1,5 @@
 meta {
-  name: LogoutAll
+  name: LogoutAllTalent
   type: http
   seq: 5
 }
@@ -8,6 +8,10 @@ post {
   url: {{base_url}}/auth/logout/all
   body: none
   auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{talent_access_token}}
 }
 
 settings {

@@ -1,0 +1,30 @@
+meta {
+  name: LoginTalent
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": {{talent_email}},
+    "password": {{password}}
+  }
+}
+
+script:post-response {
+  const token = res.body.data.token;
+
+  bru.setEnvVar("talent_access_token", token);
+  bru.setEnvVar("access_token", token);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

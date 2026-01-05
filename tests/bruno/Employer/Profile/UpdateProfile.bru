@@ -1,0 +1,28 @@
+meta {
+  name: UpdateProfile
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{base_url}}/employer/profile
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{employer_access_token}}
+}
+
+body:json {
+  {
+    "companyName": "HireLink Test Co",
+    "companyWebsite": "https://example.com",
+    "companyLocation": "Remote"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

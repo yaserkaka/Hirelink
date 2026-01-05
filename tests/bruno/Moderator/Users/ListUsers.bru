@@ -1,0 +1,38 @@
+meta {
+  name: ListUsers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/moderation/users?limit=20&skip=0
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{moderator_access_token}}
+}
+
+params:query {
+  limit: 20
+  skip: 0
+}
+
+script:post-response {
+  const users = res.body?.data;
+  if (!Array.isArray(users)) {
+    return;
+  }
+
+  const candidate = users.find((u) => u?.role && u.role !== "MODERATOR") || users[0];
+  const id = candidate?.id;
+  if (id) {
+    bru.setEnvVar("user_id", id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

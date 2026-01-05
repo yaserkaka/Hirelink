@@ -1,27 +1,20 @@
 meta {
-  name: Login
+  name: RefreshTalent
   type: http
   seq: 3
 }
 
-post {
-  url: {{base_url}}/auth/login
-  body: json
+get {
+  url: {{base_url}}/auth/refresh
+  body: none
   auth: inherit
-}
-
-body:json {
-  {
-    "email": "guru-sleeve-dipper@duck.com",
-    "password": "a@A345dsa"
-  }
 }
 
 script:post-response {
   const token = res.body.data.token;
-  
+
+  bru.setEnvVar("talent_access_token", token);
   bru.setEnvVar("access_token", token);
-  
 }
 
 settings {

@@ -1,0 +1,26 @@
+meta {
+  name: SetUserActive
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/moderation/users/{{user_id}}/active
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{moderator_access_token}}
+}
+
+body:json {
+  {
+    "isActive": false
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

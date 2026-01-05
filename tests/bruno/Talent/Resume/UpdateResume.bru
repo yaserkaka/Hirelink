@@ -11,23 +11,11 @@ put {
 }
 
 headers {
-  Authorization: Bearer {{access_token}}
-}
-
-body:json {
-  {
-    "headline": "a headline for testing",
-    "bio": "I love coding",
-    "location": "Planet earth"
-  }
+  Authorization: Bearer {{talent_access_token}}
 }
 
 body:multipart-form {
   resume: @file(/home/majoramari/Downloads/malak_mesh_masla7a.pdf)
-}
-
-body:file {
-  file: @file(/home/majoramari/Downloads/1.png) @contentType(image/png)
 }
 
 settings {

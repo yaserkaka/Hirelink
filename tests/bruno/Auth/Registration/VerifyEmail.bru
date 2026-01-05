@@ -1,7 +1,7 @@
 meta {
-  name: Verify
+  name: VerifyEmail
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "verificationToken": "5646fb23e71f9ce5242dacd3c156e7698e9ac602f1ff2368de7296c2c2421ac1"
+    "verificationToken": {{verification_token}}
   }
 }
 

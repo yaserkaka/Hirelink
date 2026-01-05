@@ -1,17 +1,17 @@
 meta {
-  name: DeleteResume
+  name: DeleteLogo
   type: http
-  seq: 5
+  seq: 3
 }
 
 delete {
-  url: {{base_url}}/talent/resume
+  url: {{base_url}}/employer/logo
   body: none
   auth: inherit
 }
 
 headers {
-  Authorization: Bearer {{talent_access_token}}
+  Authorization: Bearer {{employer_access_token}}
 }
 
 settings {

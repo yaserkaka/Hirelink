@@ -11,23 +11,7 @@ delete {
 }
 
 headers {
-  Authorization: Bearer {{access_token}}
-}
-
-body:json {
-  {
-    "headline": "a headline for testing",
-    "bio": "I love coding",
-    "location": "Planet earth"
-  }
-}
-
-body:multipart-form {
-  avatar: @file(/home/majoramari/Downloads/1.png)
-}
-
-body:file {
-  file: @file(/home/majoramari/Downloads/1.png) @contentType(image/png)
+  Authorization: Bearer {{talent_access_token}}
 }
 
 settings {

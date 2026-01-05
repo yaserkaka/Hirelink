@@ -1,0 +1,24 @@
+meta {
+  name: UpdateLogo
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{base_url}}/employer/logo
+  body: multipartForm
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{employer_access_token}}
+}
+
+body:multipart-form {
+  logo: @file(/home/majoramari/Downloads/1.png)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
