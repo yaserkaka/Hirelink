@@ -1,9 +1,43 @@
-import pino from "pino";
+/**
+ * Application logger.
+ *
+ * Exposes a configured Pino instance with pretty transport enabled in
+ * non-production environments.
+ *
+ * Notes:
+ * - `LOG_LEVEL` can be used to override default levels.
+ * - In production, structured JSON logs are preferred for collection by logging systems.
+ *
+ * References:
+ * - Pino: https://getpino.io/
+ */
 
-const isProd = process.env.NODE_ENV === "production";
+import pino from "pino";
+import env from "../config/env.js";
+
+const isProd = env.NODE_ENV === "production";
 
 const logger = pino({
-	level: process.env.LOG_LEVEL || (isProd ? "info" : "debug"),
+	level: env.LOG_LEVEL || (isProd ? "info" : "debug"),
+	redact: {
+		paths: [
+			"req.headers.authorization",
+			"req.headers.cookie",
+			"res.headers.set-cookie",
+			"headers.authorization",
+			"headers.cookie",
+			"authorization",
+			"cookie",
+			"password",
+			"refreshToken",
+			"accessToken",
+			"verificationToken",
+			"verificationUrl",
+			"resetUrl",
+			"passwordResetUrl",
+		],
+		censor: "[REDACTED]",
+	},
 	serializers: {
 		err: pino.stdSerializers.err,
 	},
