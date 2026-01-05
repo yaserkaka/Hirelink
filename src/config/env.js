@@ -27,10 +27,7 @@ const envSchema = z
 		DATABASE_URL: z
 			.url("Field should be a database uri")
 			.min(1, { error: "Field cannot be empty" }),
-		DATABASE_URL_TEST: z
-			.string()
-			.url("Field should be a database uri")
-			.optional(),
+		DATABASE_URL_TEST: z.url("Field should be a database uri").optional(),
 		PORT: z.preprocess((val) => Number(val), z.number()).default(3000),
 		API_VERSION: z.string().default("v1"),
 		FRONTEND_URL: z
@@ -56,7 +53,7 @@ const envSchema = z
 		GMAIL_USER: z.email().min(1, { error: "Field cannot be empty" }),
 		GMAIL_PASSWORD: z.string().min(1, { error: "Field cannot be empty" }),
 		EMAIL_VERIFICATION_EXPIRY: z.string().default("5m"),
-		MODERATOR_EMAIL: z.string().email().optional(),
+		MODERATOR_EMAIL: z.email().optional(),
 		MODERATOR_PASSWORD: z.string().min(1).optional(),
 		CLOUDINARY_CLOUD_NAME: z
 			.string()
