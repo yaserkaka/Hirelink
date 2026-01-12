@@ -1,10 +1,37 @@
+/**
+ * Authentication controller.
+ *
+ * Defines route handlers for registration, verification, login, refresh, logout,
+ * and password reset.
+ *
+ * Controller layer responsibilities:
+ * - Only handles HTTP: read the request, call the service, and return a standard response.
+ * - Must not contain business rules (they belong in the service layer).
+ *
+ * Security notes:
+ * - Access tokens are returned in JSON.
+ * - Refresh tokens are set as HttpOnly cookies (see src/config/refreshCookie.js).
+ *
+ * References:
+ * - OWASP Authentication Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+ * - Express routing: https://expressjs.com/en/guide/routing.html
+ * - Express Request API: https://expressjs.com/en/5x/api.html#req
+ * - Express Response API: https://expressjs.com/en/5x/api.html#res
+ */
+
 import { refreshCookie } from "../config/refreshCookie.js";
-import statusCodes from "../config/statusCodes.js";
 import { authService } from "../services/index.js";
 import { fail, success } from "../utils/response.utils.js";
+import statusCodes from "../utils/statusCodes.utils.js";
 
+/**
+ * Registers a new user (Talent or Employer) and triggers email verification.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function register(req, res) {
-	const result = await authService.register(req.body);
+	const payload = req.validated ?? req.body;
+	const result = await authService.register(payload);
 
 	if (!result.ok) {
 		return fail({
@@ -23,8 +50,14 @@ export async function register(req, res) {
 	});
 }
 
+/**
+ * Verifies a user's email using the verification token.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function verifyEmail(req, res) {
-	const result = await authService.verifyEmail(req.body);
+	const payload = req.validated ?? req.body;
+	const result = await authService.verifyEmail(payload);
 
 	if (!result.ok) {
 		return fail({
@@ -43,8 +76,16 @@ export async function verifyEmail(req, res) {
 	});
 }
 
+/**
+ * Logs a user in.
+ *
+ * Sets a refresh token as an HttpOnly cookie and returns an access token.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function login(req, res) {
-	const { email, password } = req.body;
+	const payload = req.validated ?? req.body;
+	const { email, password } = payload;
 
 	const result = await authService.login(email, password);
 
@@ -65,7 +106,7 @@ export async function login(req, res) {
 		});
 	}
 
-	// Set refresh token cookie
+	// Set the refresh token cookie
 	res.cookie("jwt", result.payload.refreshToken, refreshCookie);
 	return success({
 		res,
@@ -77,6 +118,11 @@ export async function login(req, res) {
 	});
 }
 
+/**
+ * Rotates the refresh token (from HttpOnly cookie) and returns a new access token.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function refresh(req, res) {
 	const { jwt: refreshToken } = req.cookies;
 	const result = await authService.refresh(refreshToken);
@@ -90,8 +136,8 @@ export async function refresh(req, res) {
 		});
 	}
 
-	// Set refresh token cookie
-	res.cookie("jwt", result.payload.refreshToken, refreshToken);
+	// Set the refresh token cookie
+	res.cookie("jwt", result.payload.refreshToken, refreshCookie);
 	return success({
 		res,
 		statusCode: result.statusCode,
@@ -102,6 +148,11 @@ export async function refresh(req, res) {
 	});
 }
 
+/**
+ * Returns the currently authenticated user.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function getCurrent(req, res) {
 	const result = await authService.getCurrent(req.user.id);
 
@@ -122,8 +173,14 @@ export async function getCurrent(req, res) {
 	});
 }
 
+/**
+ * Initiates a password reset flow by emailing a reset token.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function requestPasswordReset(req, res) {
-	const result = await authService.requestPasswordReset(req.body.email);
+	const payload = req.validated ?? req.body;
+	const result = await authService.requestPasswordReset(payload.email);
 
 	if (!result.ok) {
 		return fail({
@@ -137,11 +194,20 @@ export async function requestPasswordReset(req, res) {
 		res,
 		statusCode: result.statusCode,
 		message: result.message,
+		data: result.payload ?? null,
 	});
 }
 
+/**
+ * Resets a password using a reset token.
+ *
+ * Clears the refresh cookie after a successful reset.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function resetPassword(req, res) {
-	const result = await authService.resetPassword(req.body);
+	const payload = req.validated ?? req.body;
+	const result = await authService.resetPassword(payload);
 
 	if (!result.ok) {
 		return fail({
@@ -151,7 +217,7 @@ export async function resetPassword(req, res) {
 		});
 	}
 
-	// Clear refresh token cookie on password reset
+	// Clear the refresh token cookie after password reset
 	res.clearCookie("jwt", refreshCookie);
 	return success({
 		res,
@@ -160,13 +226,18 @@ export async function resetPassword(req, res) {
 	});
 }
 
+/**
+ * Logs out the current session by revoking the refresh token and clearing the cookie.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function logout(req, res) {
 	const { jwt: refreshToken } = req.cookies;
 
 	const result = await authService.logout(refreshToken);
 
-	// Always clear the cookie, even if the token revocation failed
-	res.clearCookie("jwt", refreshToken);
+	// Always clear the cookie, even if token revocation failed
+	res.clearCookie("jwt", refreshCookie);
 
 	if (!result.ok) {
 		return fail({
@@ -183,6 +254,12 @@ export async function logout(req, res) {
 	});
 }
 
+/**
+ * Logs out all devices by revoking all refresh tokens for the authenticated user.
+ * Clears the cookie for the current device.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 export async function logoutAllDevices(req, res) {
 	const result = await authService.logoutAllDevices(req.user.id);
 
