@@ -27,76 +27,76 @@ import {result} from "../utils/response.utils.js";
 import statusCodes from "../utils/statusCodes.utils.js";
 
 function getExpectedRoleForProfileKey(profileKey) {
-    if (profileKey === "talentProfile") {
-        return "TALENT";
-    }
-    if (profileKey === "employerProfile") {
-        return "EMPLOYER";
-    }
-    return null;
+	if (profileKey === "talentProfile") {
+		return "TALENT";
+	}
+	if (profileKey === "employerProfile") {
+		return "EMPLOYER";
+	}
+	return null;
 }
 
 function validateRoleProfileInvariant(user, profileKey) {
-    const expectedRole = getExpectedRoleForProfileKey(profileKey);
-    if (!expectedRole) {
-        return result({
-            ok: false,
-            statusCode: statusCodes.BAD_REQUEST,
-            message: "invalid profile key",
-        });
-    }
+	const expectedRole = getExpectedRoleForProfileKey(profileKey);
+	if (!expectedRole) {
+		return result({
+			ok: false,
+			statusCode: statusCodes.BAD_REQUEST,
+			message: "invalid profile key",
+		});
+	}
 
-    if (user.role === "MODERATOR") {
-        return result({
-            ok: false,
-            statusCode: statusCodes.FORBIDDEN,
-            message: "moderators do not have profiles",
-        });
-    }
+	if (user.role === "MODERATOR") {
+		return result({
+			ok: false,
+			statusCode: statusCodes.FORBIDDEN,
+			message: "moderators do not have profiles",
+		});
+	}
 
-    if (user.role !== expectedRole) {
-        return result({
-            ok: false,
-            statusCode: statusCodes.FORBIDDEN,
-            message: "forbidden",
-        });
-    }
+	if (user.role !== expectedRole) {
+		return result({
+			ok: false,
+			statusCode: statusCodes.FORBIDDEN,
+			message: "forbidden",
+		});
+	}
 
-    if (expectedRole === "TALENT") {
-        if (!user.talentProfile) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "talent profile not found",
-            });
-        }
-        if (user.employerProfile) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.CONFLICT,
-                message: "role/profile mismatch",
-            });
-        }
-    }
+	if (expectedRole === "TALENT") {
+		if (!user.talentProfile) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "talent profile not found",
+			});
+		}
+		if (user.employerProfile) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.CONFLICT,
+				message: "role/profile mismatch",
+			});
+		}
+	}
 
-    if (expectedRole === "EMPLOYER") {
-        if (!user.employerProfile) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "employer profile not found",
-            });
-        }
-        if (user.talentProfile) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.CONFLICT,
-                message: "role/profile mismatch",
-            });
-        }
-    }
+	if (expectedRole === "EMPLOYER") {
+		if (!user.employerProfile) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "employer profile not found",
+			});
+		}
+		if (user.talentProfile) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.CONFLICT,
+				message: "role/profile mismatch",
+			});
+		}
+	}
 
-    return null;
+	return null;
 }
 
 /**
@@ -110,64 +110,64 @@ function validateRoleProfileInvariant(user, profileKey) {
  * @param {"image"|"raw"} params.resourceType
  */
 export async function updateProfileFile({
-                                            userId,
-                                            profileKey,
-                                            field,
-                                            file,
-                                            resourceType,
-                                        }) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: {id: userId},
-            include: {talentProfile: true, employerProfile: true},
-        });
+											userId,
+											profileKey,
+											field,
+											file,
+											resourceType,
+										}) {
+	try {
+		const user = await prisma.user.findUnique({
+			where: {id: userId},
+			include: {talentProfile: true, employerProfile: true},
+		});
 
-        if (!user) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "user not found",
-            });
-        }
+		if (!user) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "user not found",
+			});
+		}
 
-        const invariantError = validateRoleProfileInvariant(user, profileKey);
-        if (invariantError) {
-            return invariantError;
-        }
+		const invariantError = validateRoleProfileInvariant(user, profileKey);
+		if (invariantError) {
+			return invariantError;
+		}
 
-        const oldFileId = user[profileKey]?.[field];
-        if (oldFileId) {
-            await cloudinary.uploader.destroy(oldFileId, {
-                resource_type: resourceType,
-            });
-        }
+		const oldFileId = user[profileKey]?.[field];
+		if (oldFileId) {
+			await cloudinary.uploader.destroy(oldFileId, {
+				resource_type: resourceType,
+			});
+		}
 
-        const updated = await prisma.user.update({
-            where: {id: userId},
-            data: {
-                [profileKey]: {
-                    update: {
-                        [field]: file.filename,
-                    },
-                },
-            },
-            include: {[profileKey]: true},
-        });
+		const updated = await prisma.user.update({
+			where: {id: userId},
+			data: {
+				[profileKey]: {
+					update: {
+						[field]: file.filename,
+					},
+				},
+			},
+			include: {[profileKey]: true},
+		});
 
-        return result({
-            ok: true,
-            statusCode: statusCodes.OK,
-            message: "file updated",
-            payload: updated,
-        });
-    } catch (err) {
-        logger.error(err);
-        return result({
-            ok: false,
-            statusCode: statusCodes.INTERNAL_SERVER_ERROR,
-            message: "error updating file",
-        });
-    }
+		return result({
+			ok: true,
+			statusCode: statusCodes.OK,
+			message: "file updated",
+			payload: updated,
+		});
+	} catch (err) {
+		logger.error(err);
+		return result({
+			ok: false,
+			statusCode: statusCodes.INTERNAL_SERVER_ERROR,
+			message: "error updating file",
+		});
+	}
 }
 
 /**
@@ -184,76 +184,76 @@ export async function updateProfileFile({
  * @param {number} [params.height]
  */
 export async function getProfileFileUrl({
-                                            userId,
-                                            profileKey,
-                                            field,
-                                            resourceType,
-                                            folder,
-                                            responseKey,
-                                            width,
-                                            height,
-                                        }) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: {id: userId},
-            include: {talentProfile: true, employerProfile: true},
-        });
+											userId,
+											profileKey,
+											field,
+											resourceType,
+											folder,
+											responseKey,
+											width,
+											height,
+										}) {
+	try {
+		const user = await prisma.user.findUnique({
+			where: {id: userId},
+			include: {talentProfile: true, employerProfile: true},
+		});
 
-        if (!user) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "user not found",
-            });
-        }
+		if (!user) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "user not found",
+			});
+		}
 
-        const invariantError = validateRoleProfileInvariant(user, profileKey);
-        if (invariantError) {
-            return invariantError;
-        }
+		const invariantError = validateRoleProfileInvariant(user, profileKey);
+		if (invariantError) {
+			return invariantError;
+		}
 
-        const fileId = user[profileKey]?.[field];
-        if (!fileId) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "file not found",
-            });
-        }
+		const fileId = user[profileKey]?.[field];
+		if (!fileId) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "file not found",
+			});
+		}
 
-        const [error] = await errorUtils(
-            cloudinary.api.resource(fileId, {resource_type: resourceType}),
-        );
-        if (error) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "file not found",
-            });
-        }
+		const [error] = await errorUtils(
+			cloudinary.api.resource(fileId, {resource_type: resourceType}),
+		);
+		if (error) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "file not found",
+			});
+		}
 
-        const url = cloudinary.url(fileId, {
-            folder,
-            resource_type: resourceType,
-            ...(resourceType === "image" && width && height
-                ? {width, height, crop: "fill"}
-                : {}),
-        });
+		const url = cloudinary.url(fileId, {
+			folder,
+			resource_type: resourceType,
+			...(resourceType === "image" && width && height
+				? {width, height, crop: "fill"}
+				: {}),
+		});
 
-        return result({
-            ok: true,
-            statusCode: statusCodes.OK,
-            message: "file fetched",
-            payload: {[responseKey]: url},
-        });
-    } catch (err) {
-        logger.error(err);
-        return result({
-            ok: false,
-            statusCode: statusCodes.INTERNAL_SERVER_ERROR,
-            message: "error fetching file",
-        });
-    }
+		return result({
+			ok: true,
+			statusCode: statusCodes.OK,
+			message: "file fetched",
+			payload: {[responseKey]: url},
+		});
+	} catch (err) {
+		logger.error(err);
+		return result({
+			ok: false,
+			statusCode: statusCodes.INTERNAL_SERVER_ERROR,
+			message: "error fetching file",
+		});
+	}
 }
 
 /**
@@ -266,73 +266,73 @@ export async function getProfileFileUrl({
  * @param {"image"|"raw"} params.resourceType
  */
 export async function deleteProfileFile({
-                                            userId,
-                                            profileKey,
-                                            field,
-                                            resourceType,
-                                        }) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: {id: userId},
-            include: {talentProfile: true, employerProfile: true},
-        });
+											userId,
+											profileKey,
+											field,
+											resourceType,
+										}) {
+	try {
+		const user = await prisma.user.findUnique({
+			where: {id: userId},
+			include: {talentProfile: true, employerProfile: true},
+		});
 
-        if (!user) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "user not found",
-            });
-        }
+		if (!user) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "user not found",
+			});
+		}
 
-        const invariantError = validateRoleProfileInvariant(user, profileKey);
-        if (invariantError) {
-            return invariantError;
-        }
+		const invariantError = validateRoleProfileInvariant(user, profileKey);
+		if (invariantError) {
+			return invariantError;
+		}
 
-        const fileId = user[profileKey]?.[field];
-        if (!fileId) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "file not found",
-            });
-        }
+		const fileId = user[profileKey]?.[field];
+		if (!fileId) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "file not found",
+			});
+		}
 
-        const [error] = await errorUtils(
-            cloudinary.api.resource(fileId, {resource_type: resourceType}),
-        );
-        if (error) {
-            return result({
-                ok: false,
-                statusCode: statusCodes.NOT_FOUND,
-                message: "file not found",
-            });
-        }
+		const [error] = await errorUtils(
+			cloudinary.api.resource(fileId, {resource_type: resourceType}),
+		);
+		if (error) {
+			return result({
+				ok: false,
+				statusCode: statusCodes.NOT_FOUND,
+				message: "file not found",
+			});
+		}
 
-        await cloudinary.uploader.destroy(fileId, {resource_type: resourceType});
-        await prisma.user.update({
-            where: {id: userId},
-            data: {
-                [profileKey]: {
-                    update: {
-                        [field]: null,
-                    },
-                },
-            },
-        });
+		await cloudinary.uploader.destroy(fileId, {resource_type: resourceType});
+		await prisma.user.update({
+			where: {id: userId},
+			data: {
+				[profileKey]: {
+					update: {
+						[field]: null,
+					},
+				},
+			},
+		});
 
-        return result({
-            ok: true,
-            statusCode: statusCodes.OK,
-            message: "file deleted",
-        });
-    } catch (err) {
-        logger.error(err);
-        return result({
-            ok: false,
-            statusCode: statusCodes.INTERNAL_SERVER_ERROR,
-            message: "error deleting file",
-        });
-    }
+		return result({
+			ok: true,
+			statusCode: statusCodes.OK,
+			message: "file deleted",
+		});
+	} catch (err) {
+		logger.error(err);
+		return result({
+			ok: false,
+			statusCode: statusCodes.INTERNAL_SERVER_ERROR,
+			message: "error deleting file",
+		});
+	}
 }
