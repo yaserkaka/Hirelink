@@ -1,20 +1,42 @@
+/**
+ * Authentication service.
+ *
+ * Handles authentication business logic:
+ * - registration (asks the role services to create the right profile)
+ * - email verification and resending the verification token
+ * - login (creates access and refresh tokens)
+ * - refresh token rotation (uses token.service)
+ * - password reset flows
+ * - logout and logout from all devices
+ *
+ * Notes:
+ * - This service is the main place for auth business rules.
+ * - Emails are sent in the background and errors are logged.
+ *
+ * References:
+ * - OWASP Authentication Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+ * - OWASP Forgot Password Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html
+ */
+
 import bcrypt from "bcrypt";
 import env from "../config/env.js";
-import statusCodes from "../config/statusCodes.js";
 import ApiError from "../errors/ApiError.js";
 import logger from "../lib/logger.js";
 import prisma from "../lib/prisma.js";
 import { parseExpiry } from "../utils/general.utils.js";
 import { result } from "../utils/response.utils.js";
-import {
-	emailService,
-	employerService,
-	talentService,
-	tokenService,
-	userService,
-	verificationService,
-} from "./index.js";
+import statusCodes from "../utils/statusCodes.utils.js";
+import * as emailService from "./email.service.js";
+import * as employerService from "./employer.service.js";
+import * as talentService from "./talent.service.js";
+import * as tokenService from "./token.service.js";
+import * as userService from "./user.service.js";
+import * as verificationService from "./verification.service.js";
 
+/**
+ * Registers a new user and creates the associated role profile.
+ * @param {{ email: string, password: string, role: "TALENT"|"EMPLOYER", profileData: object }} payload
+ */
 export async function register({ email, password, role, profileData }) {
 	const hashed = await bcrypt.hash(password, 10);
 	const profileOptions = { email, password: hashed, profileData };
@@ -37,6 +59,13 @@ export async function register({ email, password, role, profileData }) {
 
 	const verificationUrl = `${env.FRONTEND_URL}/verify?vt=${result.payload.verificationToken}`;
 
+	if (env.NODE_ENV !== "production") {
+		logger.info(
+			{ email: result.payload.email, verificationUrl },
+			"[dev] verification url",
+		);
+	}
+
 	emailService
 		.sendVerificationEmail(result.payload.email, verificationUrl, {
 			expiryMinutes: 5,
@@ -45,13 +74,19 @@ export async function register({ email, password, role, profileData }) {
 			logger.error(err);
 		});
 
-	delete result.payload.password; // remove password, for security (this object will return to the controller)
-	delete result.payload.verificationToken;
-	delete result.payload.verificationExpiresAt;
+	delete result.payload.password; // Remove password for security reasons
+	if (env.NODE_ENV === "production") {
+		delete result.payload.verificationToken;
+		delete result.payload.verificationExpiresAt;
+	}
 
 	return result;
 }
 
+/**
+ * Verifies a user's email using the verification token.
+ * @param {{ verificationToken: string }} payload
+ */
 export async function verifyEmail({ verificationToken }) {
 	const user = await prisma.user.findFirst({
 		where: { verificationToken },
@@ -116,6 +151,14 @@ export async function verifyEmail({ verificationToken }) {
 	});
 }
 
+/**
+ * Logs in a user.
+ *
+ * Returns an access token and a refresh token. The controller is responsible for
+ * setting the refresh token cookie.
+ * @param {string} email
+ * @param {string} password
+ */
 export async function login(email, password) {
 	const user = await userService.findUser(email);
 
@@ -135,6 +178,13 @@ export async function login(email, password) {
 
 		const verificationUrl = `${env.FRONTEND_URL}/verify?vt=${verificationToken}`;
 
+		if (env.NODE_ENV !== "production") {
+			logger.info(
+				{ email: user.email, verificationUrl },
+				"[dev] verification url",
+			);
+		}
+
 		emailService
 			.sendVerificationEmail(user.email, verificationUrl, {
 				expiryMinutes: 5,
@@ -149,12 +199,12 @@ export async function login(email, password) {
 			message: "email verification required",
 			payload: {
 				requiresVerification: true,
-				verificationToken,
+				...(env.NODE_ENV !== "production" ? { verificationToken } : {}),
 			},
 		});
 	}
 
-	// --- Password Check ---
+	// --- Password check ---
 	const isValidPassword = await bcrypt.compare(password, user.password);
 	if (!isValidPassword) {
 		return result({
@@ -164,7 +214,7 @@ export async function login(email, password) {
 		});
 	}
 
-	// --- Generate tokens ---
+	// --- Create tokens ---
 	const accessToken = tokenService.generateAccessToken(user.id);
 	const refreshToken = tokenService.generateRefreshToken(user.id);
 
@@ -188,6 +238,10 @@ export async function login(email, password) {
 	});
 }
 
+/**
+ * Rotates the refresh token and returns a new access token.
+ * @param {string} refreshToken
+ */
 export async function refresh(refreshToken) {
 	const rotationResult = await tokenService.rotateRefreshToken(refreshToken);
 
@@ -195,7 +249,7 @@ export async function refresh(refreshToken) {
 		return rotationResult;
 	}
 
-	// Generate new access token
+	// Create a new access token
 	const accessToken = tokenService.generateAccessToken(
 		rotationResult.payload.userId,
 	);
@@ -210,6 +264,13 @@ export async function refresh(refreshToken) {
 	};
 }
 
+/**
+ * Fetches the current user by id.
+ *
+ * If the user exists but is not email-verified, returns a success response with
+ * `requiresVerification`.
+ * @param {string} userId
+ */
 export async function getCurrent(userId) {
 	const user = await userService.findUser(userId);
 
@@ -245,11 +306,17 @@ export async function getCurrent(userId) {
 	});
 }
 
+/**
+ * Requests a password reset email for the provided email.
+ *
+ * Always returns OK to avoid leaking which emails exist.
+ * @param {string} email
+ */
 export async function requestPasswordReset(email) {
 	const user = await userService.findUser(email);
 
 	if (!user) {
-		// Don't reveal whether email exists - always return success
+		// Do not reveal whether the email exists: always return success
 		return result({
 			ok: true,
 			statusCode: statusCodes.OK,
@@ -257,12 +324,16 @@ export async function requestPasswordReset(email) {
 		});
 	}
 
-	// Generate reset token
+	// Create reset token
 	const resetToken = await verificationService.generatePasswordResetToken(
 		user.id,
 	);
 
 	const resetUrl = `${env.FRONTEND_URL}/reset?vt=${resetToken}`;
+
+	if (env.NODE_ENV !== "production") {
+		logger.info({ email: user.email, resetUrl }, "[dev] password reset url");
+	}
 
 	// Send password reset email (non-blocking)
 	emailService
@@ -277,15 +348,20 @@ export async function requestPasswordReset(email) {
 		ok: true,
 		statusCode: statusCodes.OK,
 		message: "if an account exists, a password reset email has been sent",
+		payload: env.NODE_ENV !== "production" ? { resetToken } : null,
 	});
 }
 
+/**
+ * Resets a password using a reset token.
+ * @param {{ verificationToken: string, newPassword: string, oldPassword?: string }} payload
+ */
 export async function resetPassword({
 	verificationToken,
 	newPassword,
 	oldPassword,
 }) {
-	// Find user by verification token
+	// Find the user by the reset token
 	const user = await prisma.user.findFirst({
 		where: { verificationToken },
 	});
@@ -298,7 +374,7 @@ export async function resetPassword({
 		});
 	}
 
-	// Check if token has expired
+	// Check if the token has expired
 	if (!user.verificationExpiresAt || new Date() > user.verificationExpiresAt) {
 		await prisma.user.update({
 			where: { id: user.id },
@@ -314,7 +390,7 @@ export async function resetPassword({
 		});
 	}
 
-	// If email is already verified and oldPassword is provided, verify it
+	// If the email is already verified and oldPassword is provided, check it
 	if (user.isEmailVerified && oldPassword) {
 		const isValidPassword = await bcrypt.compare(oldPassword, user.password);
 		if (!isValidPassword) {
@@ -326,17 +402,17 @@ export async function resetPassword({
 		}
 	}
 
-	// Hash new password
+	// Hash the new password
 	const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-	// Update password and clear verification token atomically
+	// Update the password and clear the reset token in one transaction
 	// Also revoke all refresh tokens for security
 	await prisma.$transaction(async (tx) => {
 		await tx.user.update({
 			where: { id: user.id },
 			data: {
 				password: hashedPassword,
-				isEmailVerified: true, // Verify email if not already verified
+				isEmailVerified: true, // Verify email if it was not verified yet
 				verificationToken: null,
 				verificationExpiresAt: null,
 			},
@@ -361,6 +437,10 @@ export async function resetPassword({
 	});
 }
 
+/**
+ * Logs out the current session by revoking the refresh token.
+ * @param {string | undefined} refreshToken
+ */
 export async function logout(refreshToken) {
 	if (!refreshToken) {
 		return result({
@@ -373,6 +453,10 @@ export async function logout(refreshToken) {
 	return await tokenService.revokeRefreshToken(refreshToken);
 }
 
+/**
+ * Logs out all devices by revoking all refresh tokens for the user.
+ * @param {string} userId
+ */
 export async function logoutAllDevices(userId) {
 	try {
 		await tokenService.revokeAllRefreshTokens(userId);
