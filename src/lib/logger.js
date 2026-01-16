@@ -36,6 +36,7 @@ const logger = pino({
 			"resetUrl",
 			"passwordResetUrl",
 		],
+		remove: !isProd,
 		censor: "[REDACTED]",
 	},
 	serializers: {
