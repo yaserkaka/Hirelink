@@ -20,25 +20,25 @@ import {fail, success} from "../utils/response.utils.js";
  * @param {import("express").Response} res
  */
 export async function updateProfile(req, res) {
-    const result = await employerService.updateProfile(
-        req.user.id,
-        req.validated,
-    );
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	const result = await employerService.updateProfile(
+		req.user.id,
+		req.validated,
+	);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
 
 /**
@@ -47,22 +47,22 @@ export async function updateProfile(req, res) {
  * @param {import("express").Response} res
  */
 export async function updateLogo(req, res) {
-    const result = await employerService.updateLogo(req.user.id, req.file);
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	const result = await employerService.updateLogo(req.user.id, req.file);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
 
 /**
@@ -71,26 +71,26 @@ export async function updateLogo(req, res) {
  * @param {import("express").Response} res
  */
 export async function getLogo(req, res) {
-    const result = await employerService.getLogo(req.user.id, {
-        width: req.query.width || 200,
-        height: req.query.height || 200,
-    });
+	const result = await employerService.getLogo(req.user.id, {
+		width: req.query.width || 200,
+		height: req.query.height || 200,
+	});
 
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
 
 /**
@@ -99,21 +99,21 @@ export async function getLogo(req, res) {
  * @param {import("express").Response} res
  */
 export async function deleteLogo(req, res) {
-    const result = await employerService.deleteLogo(req.user.id);
+	const result = await employerService.deleteLogo(req.user.id);
 
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
