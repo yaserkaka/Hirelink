@@ -33,10 +33,14 @@ const experienceLevelSchema = z
  */
 const jobSkillSchema = z
 	.object({
-		skillId: z.string().min(1),
+		skillId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
 		required: z.boolean().optional(),
 	})
 	.strict()
+	.refine((v) => Boolean(v.skillId || v.name), {
+		message: "skillId or name is required",
+	})
 	.describe("A required skill for the job");
 
 /**
@@ -44,12 +48,44 @@ const jobSkillSchema = z
  */
 const jobLanguageSchema = z
 	.object({
-		languageId: z.string().min(1),
+		languageId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
 		minimumProficiency: z.enum(["BASIC", "INTERMEDIATE", "ADVANCED", "NATIVE"]),
 		required: z.boolean().optional(),
 	})
 	.strict()
+	.refine((v) => Boolean(v.languageId || v.name), {
+		message: "languageId or name is required",
+	})
 	.describe("A required language for the job");
+
+const jobSkillIdentifierSchema = z
+	.object({
+		skillId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
+	})
+	.strict()
+	.refine((v) => Boolean(v.skillId || v.name), {
+		message: "skillId or name is required",
+	});
+
+const jobLanguageIdentifierSchema = z
+	.object({
+		languageId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
+	})
+	.strict()
+	.refine((v) => Boolean(v.languageId || v.name), {
+		message: "languageId or name is required",
+	});
+
+export const upsertJobSkillSchema = jobSkillSchema;
+
+export const removeJobSkillSchema = jobSkillIdentifierSchema;
+
+export const upsertJobLanguageSchema = jobLanguageSchema;
+
+export const removeJobLanguageSchema = jobLanguageIdentifierSchema;
 
 /**
  * Zod schema for creating a job.
@@ -124,10 +160,7 @@ export const applyToJobSchema = z
 			.min(1)
 			.optional()
 			.describe("A cover letter submitted with the application"),
-		resumeUrl: z
-			.url()
-			.optional()
-			.describe("A URL to the applicant's resume"),
+		resumeUrl: z.url().optional().describe("A URL to the applicant's resume"),
 	})
 	.strict();
 
