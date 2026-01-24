@@ -20,22 +20,22 @@ import {fail, success} from "../utils/response.utils.js";
  * @param {import("express").Response} res
  */
 export async function list(req, res) {
-    const result = await applicationService.listTalentApplications(req.user.id);
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	const result = await applicationService.listTalentApplications(req.user.id);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
 
 /**
@@ -44,26 +44,26 @@ export async function list(req, res) {
  * @param {import("express").Response} res
  */
 export async function listEmployerJobApplications(req, res) {
-    const result = await applicationService.listEmployerJobApplications(
-        req.user.id,
-        req.params.jobId,
-    );
+	const result = await applicationService.listEmployerJobApplications(
+		req.user.id,
+		req.params.jobId,
+	);
 
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
 
 /**
@@ -72,26 +72,26 @@ export async function listEmployerJobApplications(req, res) {
  * @param {import("express").Response} res
  */
 export async function updateStatus(req, res) {
-    const payload = req.validated ?? req.body;
-    const result = await applicationService.updateEmployerApplicationStatus(
-        req.user.id,
-        req.params.applicationId,
-        payload.status,
-    );
+	const payload = req.validated ?? req.body;
+	const result = await applicationService.updateEmployerApplicationStatus(
+		req.user.id,
+		req.params.applicationId,
+		payload.status,
+	);
 
-    if (!result.ok) {
-        return fail({
-            res,
-            statusCode: result.statusCode,
-            message: result.message,
-            details: result.payload,
-        });
-    }
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
 
-    return success({
-        res,
-        statusCode: result.statusCode,
-        message: result.message,
-        data: result.payload,
-    });
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
 }
