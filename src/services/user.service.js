@@ -46,8 +46,8 @@ export async function findUser(identifier) {
 
 	// Otherwise, treat it as an id
 	const roleRow = await prisma.user.findUnique({
-		where: {id: identifier},
-		select: {role: true},
+		where: { id: identifier },
+		select: { role: true },
 	});
 	if (!roleRow) {
 		return null;
@@ -57,8 +57,8 @@ export async function findUser(identifier) {
 		where: { id: identifier },
 		select: {
 			...baseSelect,
-			...(roleRow.role === "TALENT" ? {talentProfile: true} : {}),
-			...(roleRow.role === "EMPLOYER" ? {employerProfile: true} : {}),
+			...(roleRow.role === "TALENT" ? { talentProfile: true } : {}),
+			...(roleRow.role === "EMPLOYER" ? { employerProfile: true } : {}),
 		},
 	});
 }
@@ -78,8 +78,8 @@ export async function getUserWithProfiles(userId) {
 	}
 
 	return prisma.user.findUnique({
-		where: {id: userId},
-		include: {talentProfile: true, employerProfile: true},
+		where: { id: userId },
+		include: { talentProfile: true, employerProfile: true },
 	});
 }
 
@@ -182,8 +182,8 @@ export function validateRoleProfileInvariant(user, profileKey) {
  */
 export async function deleteUser(userId) {
 	const existing = await prisma.user.findUnique({
-		where: {id: userId},
-		select: {id: true, role: true},
+		where: { id: userId },
+		select: { id: true, role: true },
 	});
 	if (!existing) {
 		return result({
@@ -201,7 +201,7 @@ export async function deleteUser(userId) {
 		});
 	}
 
-	await prisma.user.delete({where: {id: userId}});
+	await prisma.user.delete({ where: { id: userId } });
 	return result({
 		ok: true,
 		statusCode: statusCodes.OK,
