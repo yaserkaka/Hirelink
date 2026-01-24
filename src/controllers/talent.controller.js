@@ -84,6 +84,82 @@ export async function setLanguages(req, res) {
 	});
 }
 
+export async function upsertSkill(req, res) {
+	const payload = req.validated ?? req.body;
+	const result = await talentService.upsertSkill(req.user.id, payload);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
+}
+
+export async function removeSkill(req, res) {
+	const payload = req.validated ?? req.body;
+	const result = await talentService.removeSkill(req.user.id, payload);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
+}
+
+export async function upsertLanguage(req, res) {
+	const payload = req.validated ?? req.body;
+	const result = await talentService.upsertLanguage(req.user.id, payload);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
+}
+
+export async function removeLanguage(req, res) {
+	const payload = req.validated ?? req.body;
+	const result = await talentService.removeLanguage(req.user.id, payload);
+	if (!result.ok) {
+		return fail({
+			res,
+			statusCode: result.statusCode,
+			message: result.message,
+			details: result.payload,
+		});
+	}
+	return success({
+		res,
+		statusCode: result.statusCode,
+		message: result.message,
+		data: result.payload,
+	});
+}
+
 /**
  * Uploads/updates a talent profile file (avatar/resume).
  * @param {import("express").Request} req

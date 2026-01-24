@@ -24,6 +24,26 @@ const languageProficiencySchema = z.enum([
 	"NATIVE",
 ]);
 
+const talentSkillIdentifierSchema = z
+	.object({
+		skillId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
+	})
+	.strict()
+	.refine((v) => Boolean(v.skillId || v.name), {
+		message: "skillId or name is required",
+	});
+
+const talentLanguageIdentifierSchema = z
+	.object({
+		languageId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
+	})
+	.strict()
+	.refine((v) => Boolean(v.languageId || v.name), {
+		message: "languageId or name is required",
+	});
+
 /**
  * Zod schema for updating a talent profile.
  */
@@ -65,6 +85,19 @@ export const talentSkillsSchema = z
 	})
 	.strict();
 
+export const upsertTalentSkillSchema = z
+	.object({
+		skillId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
+		level: skillLevelSchema.optional(),
+	})
+	.strict()
+	.refine((v) => Boolean(v.skillId || v.name), {
+		message: "skillId or name is required",
+	});
+
+export const removeTalentSkillSchema = talentSkillIdentifierSchema;
+
 /**
  * Zod schema for updating a talent's languages.
  */
@@ -83,3 +116,16 @@ export const talentLanguagesSchema = z
 			.describe("An array of languages and their proficiency levels"),
 	})
 	.strict();
+
+export const upsertTalentLanguageSchema = z
+	.object({
+		languageId: z.string().min(1).optional(),
+		name: z.string().min(1).optional(),
+		proficiency: languageProficiencySchema.optional(),
+	})
+	.strict()
+	.refine((v) => Boolean(v.languageId || v.name), {
+		message: "languageId or name is required",
+	});
+
+export const removeTalentLanguageSchema = talentLanguageIdentifierSchema;

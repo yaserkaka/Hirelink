@@ -21,14 +21,23 @@ import requireRole from "../middleware/requireRole.js";
 import { uploadAvatar, uploadResume } from "../middleware/upload.js";
 import validate from "../middleware/validate.js";
 import {
+	removeTalentLanguageSchema,
+	removeTalentSkillSchema,
 	talentLanguagesSchema,
 	talentProfileSchema,
 	talentSkillsSchema,
+	upsertTalentLanguageSchema,
+	upsertTalentSkillSchema,
 } from "../validators/talent.validator.js";
 
 const router = Router();
 
-router.get("/profile", requireAuth, requireRole("TALENT"), authController.getCurrent);
+router.get(
+	"/profile",
+	requireAuth,
+	requireRole("TALENT"),
+	authController.getCurrent,
+);
 router.put(
 	"/profile",
 	requireAuth,
@@ -45,12 +54,42 @@ router.put(
 	talentController.setSkills,
 );
 
+router.post(
+	"/skills",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(upsertTalentSkillSchema),
+	talentController.upsertSkill,
+);
+router.delete(
+	"/skills",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(removeTalentSkillSchema),
+	talentController.removeSkill,
+);
+
 router.put(
 	"/languages",
 	requireAuth,
 	requireRole("TALENT"),
 	validate(talentLanguagesSchema),
 	talentController.setLanguages,
+);
+
+router.post(
+	"/languages",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(upsertTalentLanguageSchema),
+	talentController.upsertLanguage,
+);
+router.delete(
+	"/languages",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(removeTalentLanguageSchema),
+	talentController.removeLanguage,
 );
 
 router.put(
@@ -60,7 +99,12 @@ router.put(
 	uploadAvatar.single("avatar"),
 	talentController.updateFile,
 );
-router.get("/avatar", requireAuth, requireRole("TALENT"), talentController.getFile);
+router.get(
+	"/avatar",
+	requireAuth,
+	requireRole("TALENT"),
+	talentController.getFile,
+);
 router.delete(
 	"/avatar",
 	requireAuth,
@@ -68,7 +112,12 @@ router.delete(
 	talentController.deleteFile,
 );
 
-router.get("/resume", requireAuth, requireRole("TALENT"), talentController.getFile);
+router.get(
+	"/resume",
+	requireAuth,
+	requireRole("TALENT"),
+	talentController.getFile,
+);
 router.put(
 	"/resume",
 	requireAuth,
