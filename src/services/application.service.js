@@ -166,10 +166,38 @@ export async function listEmployerJobApplications(userId, jobId) {
 			talent: {
 				include: {
 					user: { select: { email: true } },
+					certificates: {
+						select: {
+							id: true,
+							name: true,
+							issuer: true,
+							credentialUrl: true,
+							credentialId: true,
+							issueDate: true,
+							expiryDate: true,
+							createdAt: true,
+						},
+						orderBy: { createdAt: "asc" },
+					},
 				},
 			},
 		},
 	});
+
+	for (const app of apps) {
+		if (app?.talent?.certificates) {
+			app.talent.certificates = app.talent.certificates.map((c) => ({
+				certificateId: c.id,
+				name: c.name,
+				issuer: c.issuer,
+				credentialUrl: c.credentialUrl,
+				credentialId: c.credentialId,
+				issueDate: c.issueDate,
+				expiryDate: c.expiryDate,
+				createdAt: c.createdAt,
+			}));
+		}
+	}
 
 	return result({
 		ok: true,
