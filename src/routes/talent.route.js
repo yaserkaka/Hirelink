@@ -21,11 +21,14 @@ import requireRole from "../middleware/requireRole.js";
 import { uploadAvatar, uploadResume } from "../middleware/upload.js";
 import validate from "../middleware/validate.js";
 import {
+	removeTalentCertificateSchema,
 	removeTalentLanguageSchema,
 	removeTalentSkillSchema,
+	talentCertificatesSchema,
 	talentLanguagesSchema,
 	talentProfileSchema,
 	talentSkillsSchema,
+	upsertTalentCertificateSchema,
 	upsertTalentLanguageSchema,
 	upsertTalentSkillSchema,
 } from "../validators/talent.validator.js";
@@ -90,6 +93,29 @@ router.delete(
 	requireRole("TALENT"),
 	validate(removeTalentLanguageSchema),
 	talentController.removeLanguage,
+);
+
+router.put(
+	"/certificates",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(talentCertificatesSchema),
+	talentController.setCertificates,
+);
+
+router.post(
+	"/certificates",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(upsertTalentCertificateSchema),
+	talentController.upsertCertificate,
+);
+router.delete(
+	"/certificates",
+	requireAuth,
+	requireRole("TALENT"),
+	validate(removeTalentCertificateSchema),
+	talentController.removeCertificate,
 );
 
 router.put(
